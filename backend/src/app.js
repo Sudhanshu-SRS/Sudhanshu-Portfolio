@@ -3,12 +3,14 @@ const cors=require('cors')
 const app=express();
 const AuthRoutes=require('./routes/Auth.Routes')
 const CertificateRoutes=require('./routes/Certificate.Routes')
+const uploadRoutes = require('./routes/upload.routes');
 app.use(cors())
 app.use(express.json())
 
 app.use('/api/admin',AuthRoutes)
 
 app.use('/api/certificate',CertificateRoutes)
+app.use('/api/upload',uploadRoutes)
 
 
 // Test route

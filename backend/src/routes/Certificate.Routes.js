@@ -1,4 +1,4 @@
-const CertiController=require('../controller/Certificate.Controllers');
+const CertiController=require('../controller/Certificate.controller');
 const Certificaterouter=require('express').Router()
 const Authmiddleware=require('../middleware/Auth.middleware')
 Certificaterouter.post('/create',Authmiddleware,CertiController.CreateCertificate )
