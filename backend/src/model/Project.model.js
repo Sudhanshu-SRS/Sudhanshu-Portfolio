@@ -1,16 +1,13 @@
-const mongo=require('mongoose')
+const mongoose = require('mongoose');
 
-const ProjectSchema=new mongo.Schema(
-  {
-    title:String,
-    image:String,
-    role:String,
-    work:String,
-    liveLink:String,
+const ProjectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  image: String,
+  role: String,
+  work: String,
+  liveLink: String
+}, { timestamps: true });
 
-  }
-)
+const ProjectModel = mongoose.model("Project", ProjectSchema);
 
-const ProjectModel=mongo.model("Projects",ProjectSchema)
-
-module.exports=ProjectModel;
+module.exports = ProjectModel;
