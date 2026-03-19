@@ -1,51 +1,110 @@
-import { motion, useTransform } from 'framer-motion';
+import { motion, useTransform, useSpring } from 'framer-motion';
 
 export default function Overlay({ scrollYProgress }) {
-  // Section 1: Hero (0% to 20%)
-  const opacity1 = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const y1 = useTransform(scrollYProgress, [0, 0.2], [0, -150]);
+  // 🔥 Smooth helper (makes everything buttery)
+  const smooth = (value) =>
+    useSpring(value, {
+      stiffness: 80,
+      damping: 20,
+      mass: 0.5,
+    });
 
-  // Section 2: Bridging design... (30% to 50%)
-  const opacity2 = useTransform(scrollYProgress, [0.2, 0.3, 0.4, 0.5], [0, 1, 1, 0]);
-  const y2 = useTransform(scrollYProgress, [0.2, 0.5], [150, -150]);
+  // =========================
+  // HERO (0 → 0.25)
+  // =========================
+  const opacity1 = smooth(useTransform(scrollYProgress, [0, 0.2], [1, 0]));
+  const y1 = smooth(useTransform(scrollYProgress, [0, 0.2], [0, -120]));
+  const scale1 = smooth(useTransform(scrollYProgress, [0, 0.2], [1, 0.96]));
 
-  // Section 3: Let's show Capabilities introduction (60% to 80%)
-  const opacity3 = useTransform(scrollYProgress, [0.55, 0.65, 0.75, 0.85], [0, 1, 1, 0]);
-  const y3 = useTransform(scrollYProgress, [0.55, 0.85], [150, -150]);
+  // =========================
+  // INTRO 1 (0.2 → 0.5)
+  // =========================
+  const opacity2 = smooth(
+    useTransform(scrollYProgress, [0.2, 0.3, 0.45], [0, 1, 0])
+  );
+  const y2 = smooth(
+    useTransform(scrollYProgress, [0.2, 0.3, 0.45], [120, 0, -120])
+  );
+  const scale2 = smooth(
+    useTransform(scrollYProgress, [0.2, 0.3, 0.45], [0.95, 1, 0.96])
+  );
+
+  // =========================
+  // INTRO 2 (0.45 → 0.75)
+  // =========================
+  const opacity3 = smooth(
+    useTransform(scrollYProgress, [0.45, 0.55, 0.7], [0, 1, 0])
+  );
+  const y3 = smooth(
+    useTransform(scrollYProgress, [0.45, 0.55, 0.7], [120, 0, -120])
+  );
+  const scale3 = smooth(
+    useTransform(scrollYProgress, [0.45, 0.55, 0.7], [0.95, 1, 0.96])
+  );
 
   return (
-    <div className="absolute top-0 left-0 w-full h-[500vh] pointer-events-none z-10">
+    <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
 
-      {/* Hero */}
+      {/* ================= HERO ================= */}
       <motion.div
-        style={{ opacity: opacity1, y: y1 }}
-        className="absolute top-0 w-full h-screen flex flex-col items-center justify-center text-center left-0 px-4"
+        style={{ opacity: opacity1, y: y1, scale: scale1 }}
+        className="absolute inset-0 flex flex-col items-center justify-end p-6 pb-24 md:pb-32"
       >
-        <h1 className="text-7xl md:text-9xl font-extrabold tracking-tighter mb-6">Sudhanshu.</h1>
-        <p className="text-2xl md:text-3xl text-gray-300 font-medium tracking-wide">Creative Engineer</p>
+        <div className="flex flex-col items-center text-center relative w-full h-full justify-end">
+          
+          <h1 className="text-6xl md:text-[8rem] font-bold tracking-[-0.03em] text-white/50 mix-blend-overlay drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] leading-none mb-2 mt-auto">
+            Sudhanshu.
+          </h1>
+
+          <p className="text-2xl md:text-3xl font-medium tracking-[0.2em] text-white/40 mix-blend-overlay uppercase drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+            Creative Engineer
+          </p>
+
+          {/* Scroll Indicator */}
+          <div className="mt-20 flex flex-col items-center gap-2 text-white/40">
+            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
+              <motion.div
+                animate={{ y: [0, 15, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                className="w-1.5 h-1.5 bg-white/60 rounded-full"
+              />
+            </div>
+            <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
+              Scroll
+            </span>
+          </div>
+
+        </div>
       </motion.div>
 
-      {/* Intro */}
+      {/* ================= INTRO 1 ================= */}
       <motion.div
-        style={{ opacity: opacity2, y: y2 }}
-        className="absolute top-[150vh] left-0 w-full h-screen flex flex-col items-center justify-center px-8 text-center"
+        style={{ opacity: opacity2, y: y2, scale: scale2 }}
+        className="absolute inset-0 flex flex-col items-start justify-end p-6 pb-24 md:px-20 md:pb-32 lg:px-28"
       >
-        <h2 className="text-5xl md:text-7xl font-bold max-w-4xl leading-tight">
-          Bridging the gap between <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-white italic">aesthetic design</span> and <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">robust engineering.</span>
-        </h2>
+        <div className="max-w-xl">
+          <h2 className="text-4xl md:text-6xl tracking-[-0.03em] text-white/50 mix-blend-overlay drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] leading-tight">
+            I build <br />
+            <span className="font-bold inline-block mt-2">
+              digital experiences.
+            </span>
+          </h2>
+        </div>
       </motion.div>
 
-      {/* Transition to Capabilities */}
+      {/* ================= INTRO 2 ================= */}
       <motion.div
-        style={{ opacity: opacity3, y: y3 }}
-        className="absolute top-[300vh] right-0 w-full h-screen flex flex-col items-center justify-center px-8 text-center"
+        style={{ opacity: opacity3, y: y3, scale: scale3 }}
+        className="absolute inset-0 flex flex-col items-end justify-end p-6 pb-24 md:px-20 md:pb-32 lg:px-28 text-right"
       >
-        <p className="text-xl md:text-2xl text-gray-400 font-semibold uppercase tracking-widest mb-4">Core Capabilities</p>
-        <h2 className="text-5xl md:text-6xl font-bold max-w-3xl leading-tight">
-          Crafting pixel-perfect digital experiences.
-        </h2>
+        <div className="max-w-xl">
+          <h2 className="text-4xl md:text-6xl tracking-[-0.03em] text-white/50 mix-blend-overlay drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] leading-tight">
+            Bridging <br />
+            <span className="font-bold inline-block mt-2">
+              design and engineering.
+            </span>
+          </h2>
+        </div>
       </motion.div>
 
     </div>

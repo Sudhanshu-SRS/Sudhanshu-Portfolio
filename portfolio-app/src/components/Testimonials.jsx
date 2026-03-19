@@ -44,15 +44,18 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors duration-300"
+              className="flex flex-col p-8 bg-white/[0.02] border border-white/10 rounded-3xl hover:bg-white/[0.05] hover:border-white/20 hover:-translate-y-1 transition-all duration-300 shadow-lg relative overflow-hidden group"
             >
-              <svg className="h-8 w-8 text-cyan-500 mb-6 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+              <div className="w-14 h-14 rounded-full bg-[#121212] flex items-center justify-center border border-white/10 mb-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-110 transition-transform duration-300">
+              <svg className="h-6 w-6 text-cyan-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
               </svg>
-              <p className="text-gray-300 text-lg leading-relaxed mb-8 italic">"{test.text}"</p>
-              <div>
-                <h4 className="text-white font-semibold text-xl">{test.name}</h4>
-                <p className="text-cyan-500/80 text-sm font-medium uppercase tracking-wider mt-1">{test.role} at {test.company}</p>
+              </div>
+              <p className="text-gray-300 text-lg leading-relaxed mb-8 italic relative z-10">"{test.text}"</p>
+              <div className="mt-auto relative z-10">
+                <h4 className="text-white font-bold text-xl group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 transition-all duration-300">{test.name}</h4>
+                <p className="text-cyan-500/80 text-xs font-semibold uppercase tracking-wider mt-1">{test.role} at {test.company}</p>
               </div>
             </motion.div>
           ))}

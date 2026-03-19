@@ -4,23 +4,27 @@ import { ExternalLink, Github } from 'lucide-react';
 const projects = [
   {
     title: "Lumina Vault",
-    description: "Personal Media Storage and indexing application with advanced search capabilities.",
-    color: "from-blue-500/20 to-indigo-500/20"
+    description: "Personal Media Storage",
+    image: "/projects/lumina.png",
+    link: "https://lumina-vault-akshayiscoding.vercel.app"
   },
   {
     title: "Personal Portfolio",
-    description: "3D Interactive Design portfolio with advanced WebGL and Canvas scrubbing mechanics.",
-    color: "from-purple-500/20 to-pink-500/20"
+    description: "3D Interactive Design",
+    image: "/projects/portfolio-new.png",
+    link: "https://3d-interactive-portfolio.netlify.app"
   },
   {
     title: "Legacy Portfolio",
-    description: "Modern UI / Animations focused single-page application built on Next.js.",
-    color: "from-orange-500/20 to-red-500/20"
+    description: "Modern UI / Animations",
+    image: "/projects/portfolio-old.png",
+    link: "https://akshay-kumar.vercel.app/#About"
   },
   {
     title: "iCloud Hire",
-    description: "Modern UI / Animations and recruitment management dashboard.",
-    color: "from-emerald-500/20 to-teal-500/20"
+    description: "Modern UI / Animations",
+    image: "/projects/icloud-hire.png",
+    link: "https://icloud-hire.netlify.app"
   }
 ];
 
@@ -45,25 +49,22 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className={`relative overflow-hidden rounded-3xl border border-white/5 bg-[#121212] flex flex-col justify-between p-10 group hover:border-white/20 transition-all duration-500 shadow-2xl hover:shadow-cyan-500/10`}
+              className="will-change-transform h-full"
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${project.color} opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
-              
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div>
-                  <h3 className="text-3xl font-bold mb-4 text-white/90 group-hover:text-white transition-colors">{project.title}</h3>
-                  <p className="text-gray-400 text-lg leading-relaxed mb-12">{project.description}</p>
+              <a href={project.link} target="_blank" rel="noopener noreferrer" className="group relative flex flex-col gap-4 p-4 md:p-6 rounded-3xl bg-white/[0.02] border border-white/10 backdrop-blur-xl hover:bg-white/[0.04] hover:shadow-[0_0_80px_-20px_rgba(255,255,255,0.1)] hover:border-white/20 transition-all duration-500 hover:-translate-y-2 cursor-pointer h-full">
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-black/50">
+                  <img src={project.image} alt={project.title} className="object-cover w-full h-full opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.33,1,0.68,1)]" />
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <button className="flex items-center gap-2 text-sm font-semibold text-white/70 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-5 py-3 rounded-full border border-white/5">
-                    View Live <ExternalLink size={16} />
-                  </button>
-                  <button className="flex items-center justify-center text-white/70 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-3 rounded-full border border-white/5">
-                    <Github size={18} />
-                  </button>
+                <div className="flex items-center justify-between pt-2 mt-auto">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-white group-hover:text-indigo-400 transition-colors">{project.title}</h3>
+                    <p className="text-sm font-medium text-white/50 tracking-wider uppercase mt-1">{project.description}</p>
+                  </div>
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-indigo-500 group-hover:border-indigo-400 group-hover:text-white transition-all text-white/60">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-up-right w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+                  </div>
                 </div>
-              </div>
+              </a>
             </motion.div>
           ))}
         </div>
