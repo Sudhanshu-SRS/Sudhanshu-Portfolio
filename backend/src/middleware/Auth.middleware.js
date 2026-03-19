@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const adminAuth = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
-       console.log("RAW HEADER:", req.headers.authorization);
+    //    console.log("RAW HEADER:", req.headers.authorization);
         if (!authHeader) {
             return res.status(401).json({ message: "No token provided" });
         }
@@ -27,7 +27,7 @@ const adminAuth = (req, res, next) => {
     } catch (error) {
         console.error("Auth Error:", error.message);
         return res.status(401).json({ message: "Invalid token" });
-    }
+    } 
 };
 
 module.exports = adminAuth;
