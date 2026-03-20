@@ -1,4 +1,19 @@
 import { motion } from 'framer-motion';
+import{ useEffect, useState } from 'react';
+import axios from 'axios';
+
+
+
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+
+axios.get(`${backendUrl}/api/capabilities`)
+  .then(response => {
+    console.log('Capabilities from backend:', response.data);
+  })
+  .catch(error => {
+    console.error('Error fetching capabilities:', error);
+  });
+
 
 const capabilities = [
   {
