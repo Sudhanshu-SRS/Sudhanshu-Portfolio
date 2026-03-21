@@ -24,3 +24,5 @@ const corecapabilitySchema=new mongo.Schema({
 })
 
 const CapabilityModel=mongo.model("Capability",corecapabilitySchema)
+
+module.exports=CapabilityModel;

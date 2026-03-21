@@ -1,107 +1,132 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../model/User.model.js");
+const AdminUser = require("../model/User.model.js");
 const OtpGennrator = require("../utils/OtpGenrator.js");
 const SendEmail = require("../service/Nodemailer.js");
-const AdminUser = require("../model/User.model.js");
+
+const generateTokens = (res, userId, role) => {
+  const accessToken = jwt.sign({ id: userId, role }, process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || 'fallback_secret', { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret', { expiresIn: '7d' });
+
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000 // 15 mins
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+};
+
 const AdminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-const admin = await AdminUser.findOne({ Email: email });
-    if (!admin){return res.status(404).json({ message: "No Admin With THis Email" });}
-      
+    const admin = await AdminUser.findOne({ Email: email });
+    if (!admin) return res.status(404).json({ success: false, message: "No Admin With This Email" });
 
-    const PassMath = await bcrypt.compare(password, admin.Password);
-    if (!PassMath)
-     { return res.status(404).json({ message: "PassWord Is Incorrect" });}
+    const PassMatch = await bcrypt.compare(password, admin.Password);
+    if (!PassMatch) return res.status(401).json({ success: false, message: "Password Is Incorrect" });
 
     const otp = OtpGennrator();
-
     admin.Otp = otp;
     admin.OtpExpire = Date.now() + 5 * 60 * 1000;
     await admin.save();
-
+    
     await SendEmail(email, otp);
-    res.json({
-      message: "Your Otp Has Been Send Succesfully",
-    });
+    res.json({ success: true, message: "Your Otp Has Been Sent Successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", Error: error });
+    res.status(500).json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
 const VerifyOtp = async (req, res) => {
   try {
+    const { email, otp } = req.body;
+    const admin = await AdminUser.findOne({ Email: email });
 
-    const {email,otp}=req.body;
-
-
-    const admin=await AdminUser.findOne({Email:email})
-
-    if(!admin||admin.Otp!== otp|| admin.OtpExpire<Date.now())
-        return res.status(400).json({Message:"Invalid Or Expired Otp"})
+    if (!admin || admin.Otp !== otp || admin.OtpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: "Invalid Or Expired OTP" });
+    }
     
-    admin.Otp=null
-    admin.OtpExpire=null
+    admin.Otp = null;
+    admin.OtpExpire = null;
     await admin.save();
 
-    const token=jwt.sign({
-        id:admin._id,role:"Admin"
-    },
-        process.env.JWT_SECRET,{expiresIn:"1d"}
-    )
+    generateTokens(res, admin._id, "admin");
 
-    res.json({message:"Logine Succesfull",token})
-
-
-
+    res.json({ success: true, message: "Login Successful", user: { id: admin._id, email: admin.Email } });
   } catch (error) {
-    res.status(500).json({ message: "server Error", Error: error });
+    res.status(500).json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
+const RefreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ success: false, message: "Refresh token missing" });
 
-const ForgetPassword=async(req,res)=>{
- try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret');
+    const admin = await AdminUser.findById(decoded.id);
+
+    if (!admin) return res.status(404).json({ success: false, message: "User not found" });
+
+    generateTokens(res, admin._id, "admin");
+    res.json({ success: true, message: "Token refreshed successfully" });
+  } catch (error) {
+    res.status(403).json({ success: false, message: "Invalid refresh token" });
+  }
+};
+
+const Logout = (req, res) => {
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+  res.json({ success: true, message: "Logged out successfully" });
+};
+
+const ForgetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const admin = await AdminUser.findOne({ Email: email });
+    if (!admin) return res.status(400).json({ success: false, message: "Admin Not Found With This Email" });
     
-    const{email}=req.body;
+    const otp = OtpGennrator();
+    admin.Otp = otp;
+    admin.OtpExpire = Date.now() + 5 * 60 * 1000;
+    await admin.save();
 
-    const admin=await AdminUser.findOne({email})
+    await SendEmail(email, otp);
+    res.json({ success: true, message: "Your OTP Has Been Sent" });
+  } catch (error) {
+     res.status(500).json({ success: false, message: "Server Error", error: error.message });
+  }
+};
 
-    if(!admin) return res.status(400).json({message:"Admin Not Found With THis Email"})
-    
-    const otp=OtpGennrator();
-    admin.Otp=otp;
-    admin.OtpExpire=Date.now()+5*60*1000;
-    await admin.save()
+const ResetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const admin = await AdminUser.findOne({ Email: email });
 
-    await SendEmail(email,otp);
+    if (!admin || admin.Otp !== otp || admin.OtpExpire < Date.now()) {
+      return res.status(400).json({ success: false, message: "Invalid Or Expired OTP" });
+    }
 
-    res.json({message:"You Otp Has Been Send "})
- } catch (error) {
-     res.status(500).json({ message: "Server Error", Error: error });
- }
+    const salt = await bcrypt.genSalt(10);
+    admin.Password = await bcrypt.hash(newPassword, salt);
+    admin.Otp = null;
+    admin.OtpExpire = null;
+    await admin.save();
 
+    res.json({ success: true, message: "Your Password Has Been Changed Successfully" });
+  } catch (error) {
+     res.status(500).json({ success: false, message: "Server Error", error: error.message });
+  }
+};
 
-}
-
-const ResetPassword=async(req,res)=>{
-    const {email,otp,newPassword}=req.body;
-
-    const admin=await AdminUser.findOne({email})
-
-    if(!admin||admin.otp!==otp||admin.OtpExpire<Date.now()) return res.json(400).json({message:"Invalid Or Expired OTP"})
-
-    admin.Password=newPassword;
-    admin.Otp=null
-    admin.OtpExpire=null
-    await admin.save()
-
-    res.json({message:"Your Password Has Been Changed Succesfully"})
-
-}
-
-
-module.exports={
-    AdminLogin,VerifyOtp,ForgetPassword,ResetPassword
-}
+module.exports = {
+  AdminLogin, VerifyOtp, RefreshToken, Logout, ForgetPassword, ResetPassword
+};

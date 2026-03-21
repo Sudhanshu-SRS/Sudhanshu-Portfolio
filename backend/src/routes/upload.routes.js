@@ -4,7 +4,8 @@ const router = express.Router();
 
 const upload = require('../middleware/uploadmulter');
 const { uploadFile } = require('../controller/upload.controller');
-const adminAuth = require('../middleware/Auth.middleware');
+const { requireAuth, requireAdmin } = require('../middleware/authGuard');
+const adminAuth = [requireAuth, requireAdmin];
 
 // 🔐 Only admin can upload
 router.post('/', adminAuth, upload.single('file'), uploadFile);

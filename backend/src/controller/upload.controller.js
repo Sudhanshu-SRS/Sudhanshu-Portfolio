@@ -1,12 +1,19 @@
 const imagekit = require('../config/Imagekit.config');
+const { toFile } = require('@imagekit/nodejs');
 
 const uploadFile = async (req, res) => {
     try {
-        const file = req.file; // from multer
+        if (!req.file) {
+            console.log("❌ No file received");
+            return res.status(400).json({ message: "No file uploaded" });
+        }
 
-        const result = await imagekit.upload({
-            file: file.buffer.toString("base64"),
-            fileName: file.originalname,
+        console.log("✅ File:", req.file.originalname);
+
+        const result = await imagekit.files.upload({
+            file: await toFile(req.file.buffer, req.file.originalname),
+            fileName: req.file.originalname,
+            folder: "/portfolio/projects",
         });
 
         res.json({
@@ -15,7 +22,7 @@ const uploadFile = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Upload Error:", error);
         res.status(500).json({ message: "Upload failed" });
     }
 };

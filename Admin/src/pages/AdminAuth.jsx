@@ -1,198 +1,181 @@
-// src/pages/AdminAuth.jsx
-import { useState } from "react";
-import api from "../utils/api";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, KeyRound, Loader2, ArrowRight } from 'lucide-react';
+import api from '../services/api';
 
-/* ================= REUSABLE INPUT ================= */
-const InputField = ({ type, label, value, onChange, extra = "" }) => (
-  <div className="relative">
-    <input
-      type={type}
-      value={value}
-      required
-      className={`peer input-advanced ${extra}`}
-      onChange={onChange}
-    />
-    <label className="label-advanced">{label}</label>
-  </div>
-);
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(5, "Password must be at least 5 characters")
+});
 
-/* ================= BUTTON ================= */
-const Button = ({ children, loading }) => (
-  <button
-    disabled={loading}
-    className="btn-advanced w-full flex justify-center items-center gap-2 disabled:opacity-50"
-  >
-    {loading ? "Processing..." : children}
-  </button>
-);
+const otpSchema = z.object({
+  otp: z.string().min(4, "OTP is required")
+});
 
-export default function AdminAuth() {
-  const [step, setStep] = useState("login");
-  const [loading, setLoading] = useState(false);
-
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [otp, setOtp] = useState("");
-  const [email, setEmail] = useState("");
-
+const AdminAuth = () => {
+  const [step, setStep] = useState(1);
+  const [emailCache, setEmailCache] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
-  /* ================= LOGIN ================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const { register: registerLogin, handleSubmit: handleLoginSubmit, formState: { errors: loginErrors } } = useForm({
+    resolver: zodResolver(loginSchema)
+  });
 
+  const { register: registerOtp, handleSubmit: handleOtpSubmit, formState: { errors: otpErrors } } = useForm({
+    resolver: zodResolver(otpSchema)
+  });
+
+  const onLogin = async (data) => {
+    setIsLoading(true);
+    setErrorMsg('');
     try {
-      await api.post("/api/admin/login", form);
-      setStep("otp");
+      const res = await api.post('/admin/login', data);
+      if (res.data.success || res.status === 200) {
+        setEmailCache(data.email);
+        setStep(2);
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      setErrorMsg(err.response?.data?.message || err.message);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  /* ================= VERIFY ================= */
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const onVerify = async (data) => {
+    setIsLoading(true);
+    setErrorMsg('');
     try {
-      await api.post("/api/admin/verify-otp", {
-        email: form.email,
-        otp,
-      });
-
-      navigate("/dashboard");
+      const res = await api.post('/admin/verify-otp', { email: emailCache, otp: data.otp });
+      if (res.data.success || res.status === 200) {
+        navigate('/dashboard');
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid OTP");
+      setErrorMsg(err.response?.data?.message || err.message);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ================= RESET ================= */
-  const handleReset = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      await api.post("/api/admin/reset-password", { email });
-      alert("Reset link sent!");
-      setStep("login");
-    } catch (err) {
-      alert(err.response?.data?.message || "Error sending email");
-    } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden px-4">
+    <div className="min-h-screen bg-[#09090B] flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* 🌌 Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_#7c3aed,_transparent_40%),radial-gradient(circle_at_bottom_right,_#2563eb,_transparent_40%)] opacity-30 animate-pulse"></div>
-
-      {/* Glow Orbs */}
-      <div className="absolute w-[400px] h-[400px] md:w-[500px] md:h-[500px] bg-purple-600 rounded-full blur-[120px] opacity-20 top-[-100px] left-[-100px]"></div>
-      <div className="absolute w-[400px] h-[400px] md:w-[500px] md:h-[500px] bg-blue-600 rounded-full blur-[120px] opacity-20 bottom-[-100px] right-[-100px]"></div>
-
-      {/* Card */}
-      <div className="relative w-full max-w-md p-[1px] rounded-3xl bg-gradient-to-br from-white/20 to-white/5 shadow-[0_0_40px_rgba(124,58,237,0.3)]">
-
-        <div className="backdrop-blur-2xl bg-black/60 rounded-3xl p-6 sm:p-8 text-white">
-
-          {/* Header */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-wide">
-              Admin Access
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-400 mt-2">
-              Secure dashboard login
-            </p>
-          </div>
-
-          {/* ================= LOGIN ================= */}
-          {step === "login" && (
-            <form onSubmit={handleSubmit} className="space-y-5 flex flex-col justify-between h-[300px]">
-
-              <InputField
-                type="email"
-                label="Email"
-                value={form.email}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, email: e.target.value }))
-                }
-              />
-
-              <InputField
-                type="password"
-                label="Password"
-                value={form.password}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, password: e.target.value }))
-                }
-              />
-
-              <Button loading={loading}>Send OTP →</Button>
-
-              <p
-                className="text-sm text-gray-400 hover:text-white cursor-pointer text-center transition"
-                onClick={() => setStep("forgot")}
-              >
-                Forgot Password?
-              </p>
-            </form>
-          )}
-
-          {/* ================= OTP ================= */}
-          {step === "otp" && (
-            <form onSubmit={handleVerify} className="space-y-5 flex flex-col justify-between h-[200px]">
-
-              <InputField
-                type="text"
-                label="Enter OTP"
-                value={otp}
-                extra="text-center tracking-[0.4em]"
-                onChange={(e) => setOtp(e.target.value)}
-              />
-
-              <Button loading={loading}>Verify OTP →</Button>
-
-              <p
-                className="text-sm text-gray-400 hover:text-white cursor-pointer text-center"
-                onClick={() => setStep("login")}
-              >
-                Back to Login
-              </p>
-            </form>
-          )}
-
-          {/* ================= FORGOT ================= */}
-          {step === "forgot" && (
-            <form onSubmit={handleReset} className="space-y-5 flex flex-col justify-between h-[200px] w-full">
-
-              <InputField
-                type="email"
-                label="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <Button loading={loading}>
-                Send Reset Link →
-              </Button>
-
-              <p
-                className="text-sm text-gray-400 hover:text-white cursor-pointer text-center"
-                onClick={() => setStep("login")}
-              >
-                Back to Login
-              </p>
-            </form>
-          )}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-md bg-[#15151A]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10 flex flex-col items-center overflow-hidden"
+      >
+        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-8 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] flex-shrink-0">
+          <Lock className="text-white w-8 h-8" />
         </div>
-      </div>
+
+        <h2 className="text-2xl font-bold text-center text-white tracking-wide mb-2 w-full">Admin Portal</h2>
+        <p className="text-gray-400 text-center text-sm mb-6 w-full">
+          {step === 1 ? 'Enter your credentials to securely access the dashboard.' : 'Enter the OTP sent to your email.'}
+        </p>
+
+        {errorMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center font-medium w-full break-words whitespace-pre-wrap max-h-32 overflow-y-auto">
+            {typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg)}
+          </div>
+        )}
+
+        <div className="w-full">
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <motion.form 
+                key="login"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleLoginSubmit(onLogin)} 
+                className="space-y-5"
+              >
+                <div className="w-full">
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none z-10" />
+                    <input 
+                      {...registerLogin('email')}
+                      type="email" 
+                      placeholder="Admin Email"
+                      className="w-full pl-12 pr-4 py-4 rounded-xl bg-black/20 border border-white/5 text-white placeholder-gray-500 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all focus:bg-black/40 [&:-webkit-autofill]:[WebkitBoxShadow:0_0_0_30px_#15151A_inset] [&:-webkit-autofill]:[WebkitTextFillColor:white]"
+                    />
+                  </div>
+                  {loginErrors.email && <p className="text-red-400 text-xs mt-2 ml-1">{loginErrors.email.message}</p>}
+                </div>
+
+                <div className="w-full">
+                  <div className="relative">
+                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none z-10" />
+                    <input 
+                      {...registerLogin('password')}
+                      type="password" 
+                      placeholder="Password"
+                      className="w-full pl-12 pr-4 py-4 rounded-xl bg-black/20 border border-white/5 text-white placeholder-gray-500 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all focus:bg-black/40 [&:-webkit-autofill]:[WebkitBoxShadow:0_0_0_30px_#15151A_inset] [&:-webkit-autofill]:[WebkitTextFillColor:white]"
+                    />
+                  </div>
+                  {loginErrors.password && <p className="text-red-400 text-xs mt-2 ml-1">{loginErrors.password.message}</p>}
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Continue <ArrowRight className="w-5 h-5 ml-2" /></>}
+                </button>
+              </motion.form>
+            ) : (
+              <motion.form 
+                key="otp"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onSubmit={handleOtpSubmit(onVerify)} 
+                className="space-y-5"
+              >
+                <div className="w-full">
+                  <div className="relative">
+                    <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 z-10 pointer-events-none" />
+                    <input 
+                      {...registerOtp('otp')}
+                      type="text" 
+                      placeholder="Enter OTP"
+                      className="w-full pl-12 pr-4 py-4 rounded-xl bg-black/20 border border-white/5 text-white tracking-[0.5em] font-mono text-center placeholder:tracking-normal placeholder-gray-500 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all focus:bg-black/40"
+                    />
+                  </div>
+                  {otpErrors.otp && <p className="text-red-400 text-xs mt-2 ml-1 text-center">{otpErrors.otp.message}</p>}
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Verify & Access <ArrowRight className="w-5 h-5 ml-2" /></>}
+                </button>
+                
+                <button 
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="w-full py-3 text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  Back to Login
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </div>
   );
-}
+};
+
+export default AdminAuth;

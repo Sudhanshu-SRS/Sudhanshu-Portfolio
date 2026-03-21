@@ -4,7 +4,7 @@ import axios from 'axios';
 
 
 
-const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 axios.get(`${backendUrl}/api/capabilities`)
   .then(response => {

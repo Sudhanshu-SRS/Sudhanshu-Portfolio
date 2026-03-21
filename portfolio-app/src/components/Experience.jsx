@@ -1,13 +1,23 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const experiences = [
-  { role: "Senior Software Engineer", company: "Tech Corp", year: "2023 - Present" },
-  { role: "Full Stack Engineer", company: "Startup Inc", year: "2021 - 2023" },
-  { role: "Software Engineer", company: "Agency Co", year: "2019 - 2021" },
-  { role: "Web Developer", company: "Freelance", year: "2018 - 2019" }
-];
 
 export default function Experience() {
+    const [experiences, setExperiences] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/capability/');
+      setExperiences(res.data.Capabilities); // 🔥 important
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
   return (
     <section id="experience" className="relative z-20 bg-[#0a0a0a] py-32 px-8 lg:px-24 text-white">
       <div className="max-w-4xl mx-auto">

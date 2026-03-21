@@ -2,7 +2,8 @@
 const express = require('express');
 const router = express.Router();
 
-const adminAuth = require('../middleware/Auth.middleware');
+const { requireAuth, requireAdmin } = require('../middleware/authGuard');
+const adminAuth = [requireAuth, requireAdmin];
 const ctrl = require('../controller/project.controller');
 
 // 🔓 Public
