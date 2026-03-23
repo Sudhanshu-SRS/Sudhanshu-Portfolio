@@ -2,9 +2,9 @@ const CapabilityModel = require('../model/capability.model');
 
 exports.createCapability = async (req, res) => {
   try {
-    const { title, description, iconUrl } = req.body;
+    const { title, description, iconSVG } = req.body;
 
-    if (!title || !description || !iconUrl) {
+    if (!title || !description || !iconSVG) {
       return res.status(400).json({
         success: false,
         message: "All fields including icon are required"
@@ -14,7 +14,7 @@ exports.createCapability = async (req, res) => {
     const newCapability = await CapabilityModel.create({
       title,
       description,
-      iconUrl
+      iconSVG
     });
 
     res.status(201).json({ success: true, newCapability });

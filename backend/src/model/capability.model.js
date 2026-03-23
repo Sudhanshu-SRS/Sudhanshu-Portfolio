@@ -12,13 +12,9 @@ const corecapabilitySchema=new mongo.Schema({
     required: true,
   },
 
-  iconUrl: {
-    type: String, // ImageKit URL
+  iconSVG: {
+    type: String, // SVG markup
     required: true,
-  },
-
-  iconFileId: {
-    type: String, // for delete/update in ImageKit
   },
 
 })
