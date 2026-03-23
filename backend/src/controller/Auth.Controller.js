@@ -9,18 +9,20 @@ const generateTokens = (res, userId, role) => {
   const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret', { expiresIn: '7d' });
 
   res.cookie('accessToken', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60 * 1000 // 15 mins
-  });
+  httpOnly: true,
+  secure: false, // keep false in dev
+  sameSite: 'lax', // 🔥 IMPORTANT
+  path: "/", // 🔥 IMPORTANT
+  maxAge: 15 * 60 * 1000
+});
 
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  });
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: 'lax', // 🔥 IMPORTANT
+  path: "/", // 🔥 IMPORTANT
+  maxAge: 7 * 24 * 60 * 60 * 1000
+});
 };
 
 const AdminLogin = async (req, res) => {
@@ -67,17 +69,34 @@ const VerifyOtp = async (req, res) => {
 
 const RefreshToken = async (req, res) => {
   try {
+   
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json({ success: false, message: "Refresh token missing" });
+
+   
+    if (!refreshToken) {
+      console.log("❌ No refresh token found");
+      return res.status(401).json({ success: false, message: "Refresh token missing" });
+    }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret');
+
+   
+
     const admin = await AdminUser.findById(decoded.id);
 
-    if (!admin) return res.status(404).json({ success: false, message: "User not found" });
+    if (!admin) {
+      console.log("❌ User not found");
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     generateTokens(res, admin._id, "admin");
-    res.json({ success: true, message: "Token refreshed successfully" });
+
+  
+
+    res.json({ success: true });
+
   } catch (error) {
+    console.log("❌ Refresh error:", error.message);
     res.status(403).json({ success: false, message: "Invalid refresh token" });
   }
 };
