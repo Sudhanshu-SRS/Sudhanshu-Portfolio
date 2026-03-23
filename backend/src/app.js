@@ -10,7 +10,9 @@ const CertificateRoutes = require('./routes/Certificate.Routes');
 const uploadRoutes = require('./routes/upload.routes');
 const projectRoutes = require('./routes/project.routes');
 const capabilityRoutes = require('./routes/capability.routes');
-
+const AboutRoutes = require('./routes/about.routes');
+const ExperienceRoutes = require('./routes/Experience.Routes');
+const ClientRecomRoutes = require('./routes/clientRecom.routes');
 // Configure secure CORS
 // In production, process.env.FRONTEND_URL should be defined
 const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'].filter(Boolean);
@@ -46,12 +48,10 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/certificate', CertificateRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/capability', capabilityRoutes);
-
-// Test route
-app.get('/', (req, res) => {
-    res.send("API running 🚀");
-});
-
+console.log("About route loaded ✅");
+app.use('/api/about', AboutRoutes);
+app.use('/api/experience', ExperienceRoutes);
+app.use('/api/clientRecom', ClientRecomRoutes);
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error('[Error Handler]: ', err);
