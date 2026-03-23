@@ -3,8 +3,8 @@ const certificate=require('../model/certificate.model')
 const CreateCertificate=async(req,res)=>{
   try {
       
-    const {image,title,year}=req.body;
-    const newcertificate=await certificate.create({image,title,year})
+    const {image,title,year,obtainby}=req.body;
+    const newcertificate=await certificate.create({image,title,year,obtainby})
     res.status(200).json({message:"Certificate created successfully", certificate: newcertificate})
   } catch (error) {
     console.log(error);
@@ -13,23 +13,11 @@ const CreateCertificate=async(req,res)=>{
 
 const deleteCertificate = async (req, res) => {
   try {
-    const { id, title } = req.body;
+    const { id } = req.params; // ✅ FIXED
 
-    let deleted;
+    console.log("Deleting ID:", id); // debug
 
-    if (id) {
-      // ✅ Priority: delete by ID
-      deleted = await certificate.findByIdAndDelete(id);
-    } else if (title) {
-      // 🔍 Fallback: delete by title
-      deleted = await certificate.findOneAndDelete({
-        title: { $regex: title, $options: "i" }
-      });
-    } else {
-      return res.status(400).json({
-        message: "Please provide id or title"
-      });
-    }
+    const deleted = await certificate.findByIdAndDelete(id);
 
     if (!deleted) {
       return res.status(404).json({
@@ -43,35 +31,20 @@ const deleteCertificate = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("DELETE ERROR:", error); // 🔥 IMPORTANT
     res.status(500).json({ message: "Server error", error });
   }
 };
 
 const updateCertificate = async (req, res) => {
   try {
-    const { id, title, newData } = req.body;
+    const { id } = req.params; // ✅ FIX
 
-    let updated;
-
-    if (id) {
-      // ✅ Priority: update by ID
-      updated = await certificate.findByIdAndUpdate(
-        id,
-        newData,
-        { new: true }
-      );
-    } else if (title) {
-      // 🔍 Fallback: update by title
-      updated = await certificate.findOneAndUpdate(
-        { title: { $regex: title, $options: "i" } },
-        newData,
-        { new: true }
-      );
-    } else {
-      return res.status(400).json({
-        message: "Please provide id or title"
-      });
-    }
+    const updated = await certificate.findByIdAndUpdate(
+      id,
+      req.body, // ✅ directly use formData
+      { returnDocument: "after" }
+    );
 
     if (!updated) {
       return res.status(404).json({
@@ -85,6 +58,7 @@ const updateCertificate = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("UPDATE ERROR:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
