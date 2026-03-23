@@ -36,7 +36,7 @@ const AdminAuth = () => {
     setErrorMsg('');
     try {
       const res = await api.post('/admin/login', data);
-      if (res.data.success || res.status === 200) {
+     if (res.data.success === true){
         setEmailCache(data.email);
         setStep(2);
       }
@@ -47,20 +47,23 @@ const AdminAuth = () => {
     }
   };
 
-  const onVerify = async (data) => {
-    setIsLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await api.post('/admin/verify-otp', { email: emailCache, otp: data.otp });
-      if (res.data.success || res.status === 200) {
-        navigate('/dashboard');
-      }
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message);
-    } finally {
-      setIsLoading(false);
+const onVerify = async (data) => {
+  setIsLoading(true);
+  setErrorMsg('');
+  try {
+    const res = await api.post('/admin/verify-otp', { email: emailCache, otp: data.otp });
+
+    if (res.data.success || res.status === 200) {
+
+     
+      navigate('/dashboard');
     }
-  };
+  } catch (err) {
+    setErrorMsg(err.response?.data?.message || err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#09090B] flex items-center justify-center p-4 relative overflow-hidden font-sans">

@@ -10,8 +10,8 @@ const Capabilities = () => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [formData, setFormData] = useState({ title: '', description: '', iconUrl: '' });
-  const [uploading, setUploading] = useState(false);
+  const [formData, setFormData] = useState({ title: '', description: '', iconSVG: '' });
+ 
 
   useEffect(() => {
     fetchData();
@@ -27,34 +27,15 @@ const Capabilities = () => {
     }
   };
 
-  const handleFileChange = async (e) => {
-     const file = e.target.files[0];
-     if(!file) return;
-     setUploading(true);
-     const FD = new FormData();
-     FD.append('file', file);
-     try {
-       const res = await api.post('/upload', FD, {
-         headers: { 'Content-Type': 'multipart/form-data' }
-       });
-      setFormData(prev => ({
-  ...prev,
-  iconUrl: res.data.url // ✅ use ONLY this
-}));
-     } catch (err) {
-       console.error(err);
-     } finally {
-       setUploading(false);
-     }
-  };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       console.log("FORM DATA:", formData);
-      if (!formData.iconUrl) {
-  alert("Please upload an icon first!");
+    if (!formData.iconSVG) {
+  alert("Please paste SVG!");
   return;
 }
       if (editingItem) {
@@ -64,7 +45,7 @@ const Capabilities = () => {
       }
       setIsModalOpen(false);
       setEditingItem(null);
-      setFormData({ title: '', description: '', iconUrl: '' });
+      setFormData({ title: '', description: '', iconSVG: '' });
       fetchData();
     } catch (err) {
       console.error(err);
@@ -90,11 +71,29 @@ const Capabilities = () => {
     }
   };
 
-  const columns = [
-    { header: 'Icon', render: (row) => row.iconUrl ? <img src={row.iconUrl} alt={row.title} className="w-10 h-10 object-contain" /> : <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center"><ImageIcon className="w-4 h-4 text-gray-500" /></div> },
-    { header: 'Title', accessor: 'title' },
-    { header: 'Description', render: (row) => <span className="truncate max-w-xs block">{row.description}</span> },
-  ];
+const columns = [
+  {
+    header: 'Icon',
+    render: (row) =>
+      row.iconSVG ? (
+        <div
+          className="w-10 h-10 text-indigo-400"
+          dangerouslySetInnerHTML={{ __html: row.iconSVG }}
+        />
+      ) : (
+        <div className="w-10 h-10 bg-white/5 rounded flex items-center justify-center">
+          <ImageIcon className="w-4 h-4 text-gray-500" />
+        </div>
+      ),
+  },
+  { header: 'Title', accessor: 'title' },
+  {
+    header: 'Description',
+    render: (row) => (
+      <span className="truncate max-w-xs block">{row.description}</span>
+    ),
+  },
+];
 
   return (
     <div className="space-y-6">
@@ -106,7 +105,7 @@ const Capabilities = () => {
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => { setEditingItem(null); setFormData({ title: '', description: '', iconUrl: '' }); setIsModalOpen(true); }}
+          onClick={() => { setEditingItem(null); setFormData({ title: '', description: '', iconSVG: '' }); setIsModalOpen(true); }}
           className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-medium shadow-[0_4px_20px_rgba(147,51,234,0.3)] hover:shadow-[0_4px_25px_rgba(147,51,234,0.5)] transition-all"
         >
           <Plus className="w-5 h-5 mr-2" /> Add Capability
@@ -120,14 +119,24 @@ const Capabilities = () => {
           <div>
             <label className="text-xs text-gray-400 font-medium mb-2 block tracking-wide">CAPABILITY ICON</label>
             <div className="flex items-center space-x-4">
-              {formData.iconUrl && <div className="bg-[#1A1A20] p-2 rounded-xl border border-white/10"><img src={formData.iconUrl} alt="Preview" className="w-16 h-16 object-contain" /></div>}
-              <div className="flex-1 relative">
-                <input type="file" onChange={handleFileChange} className="hidden" id="icon-upload" />
-                <label htmlFor="icon-upload" className="flex items-center justify-center w-full py-4 px-4 rounded-xl border-2 border-dashed border-white/10 text-gray-400 bg-white/5 hover:text-white hover:border-purple-500 hover:bg-purple-500/5 transition-all cursor-pointer font-medium tracking-wide">
-                   {uploading ? <Loader2 className="w-5 h-5 animate-spin mr-3" /> : <ImageIcon className="w-5 h-5 mr-3" />}
-                   {uploading ? 'Uploading...' : 'Upload Icon/SVG'}
-                </label>
-              </div>
+              {formData.iconSVG && <div className="bg-[#1A1A20] p-2 rounded-xl border border-white/10">{formData.iconSVG && (
+  <div
+    className="w-16 h-16 text-indigo-400"
+    dangerouslySetInnerHTML={{ __html: formData.iconSVG }}
+  />
+)}</div>}
+              <div>
+  <label className="text-xs text-gray-400 mb-2 block">SVG ICON</label>
+
+  <textarea
+    placeholder="Paste SVG code here"
+    value={formData.iconSVG}
+    onChange={(e) =>
+      setFormData(prev => ({ ...prev, iconSVG: e.target.value }))
+    }
+    className="w-full bg-[#1A1A20] border border-white/5 rounded-xl px-4 py-3 text-white h-32"
+  />
+</div>
             </div>
           </div>
           <div>
@@ -138,7 +147,7 @@ const Capabilities = () => {
              <label className="text-xs text-gray-400 font-medium mb-2 block tracking-wide">DESCRIPTION</label>
              <textarea value={formData.description || ''} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full bg-[#1A1A20] border border-white/5 rounded-xl px-4 py-3 text-white focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 outline-none h-28 resize-none transition-all custom-scrollbar"></textarea>
           </div>
-          <button type="submit" disabled={loading || uploading} className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold tracking-wide flex flex-row items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50">
+          <button type="submit" disabled={loading } className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold tracking-wide flex flex-row items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50">
             {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
             {editingItem ? 'Save Changes' : 'Create Capability'}
           </button>

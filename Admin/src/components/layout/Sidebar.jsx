@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LayoutDashboard, FolderKanban, FileBadge, Code2, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
-
+import { NavLink, useLocation,useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Projects', icon: FolderKanban, path: '/projects' },
   { name: 'Certificates', icon: FileBadge, path: '/certificates' },
   { name: 'Capabilities', icon: Code2, path: '/capabilities' },
+  {name: 'About', icon: Code2, path: '/about' },
+  { name: 'Experience', icon: Code2, path: '/experience' },
+  { name: 'Client Recommendations', icon: Code2, path: '/client-recom' },
+  { name: 'Logout', icon: X },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -18,6 +22,26 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname, setIsOpen]);
+
+
+const navigate = useNavigate();
+
+const handleLogout = async () => {
+  try {
+    await api.post("/admin/logout"); // 🔥 your backend route
+
+    // clear frontend storage
+    localStorage.removeItem("token");
+
+    navigate("/"); // redirect to login/home
+  } catch (err) {
+    console.error("Logout failed", err);
+  }
+};
+
+
+
+
 
   return (
     <>
@@ -69,21 +93,47 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-hidden">
-          {navItems.map((item) => (
-            <NavLink 
-              key={item.path} 
-              to={item.path}
-              className={({ isActive }) => `
-                flex items-center px-3 py-3 rounded-xl transition-all duration-300
-                ${isActive ? 'bg-white/10 text-white shadow-[inset_3px_0_0_0_#A855F7]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}
-              `}
-            >
-              <item.icon className={`w-5 h-5 flex-shrink-0 ${isDesktopOpen ? 'mr-4' : 'mx-auto'}`} />
-              {isDesktopOpen && <span className="font-medium text-sm whitespace-nowrap">{item.name}</span>}
-            </NavLink>
-          ))}
-        </nav>
+       <nav className="flex-1 px-4 space-y-2 mt-4 overflow-hidden">
+  {navItems.map((item) => {
+    
+    // 🔥 SPECIAL CASE: LOGOUT
+    if (item.name === "Logout") {
+      return (
+        <button
+          key="logout"
+          onClick={handleLogout}
+          className="w-full flex items-center px-3 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
+        >
+          <item.icon className={`w-5 h-5 ${isDesktopOpen ? 'mr-4' : 'mx-auto'}`} />
+          {isDesktopOpen && (
+            <span className="font-medium text-sm whitespace-nowrap">
+              Logout
+            </span>
+          )}
+        </button>
+      );
+    }
+
+    // ✅ NORMAL LINKS
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        className={({ isActive }) => `
+          flex items-center px-3 py-3 rounded-xl transition-all duration-300
+          ${isActive ? 'bg-white/10 text-white shadow-[inset_3px_0_0_0_#A855F7]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}
+        `}
+      >
+        <item.icon className={`w-5 h-5 ${isDesktopOpen ? 'mr-4' : 'mx-auto'}`} />
+        {isDesktopOpen && (
+          <span className="font-medium text-sm whitespace-nowrap">
+            {item.name}
+          </span>
+        )}
+      </NavLink>
+    );
+  })}
+</nav>
 
         <div className="p-4 hidden md:block">
           <button 

@@ -1,33 +1,43 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  withCredentials: true, // Crucial for sending HTTP-only cookies
+  baseURL: BASE_URL,
+  withCredentials: true, // 🔥 ONLY THIS IS NEEDED
 });
 
-// Response Interceptor for auto-refreshing tokens
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    // If not authorized and we haven't already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    // 🔥 ONLY refresh if NOT login/verify route
+    const isAuthRoute = originalRequest.url.includes("/admin/login") ||
+                        originalRequest.url.includes("/admin/verify-otp");
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
       originalRequest._retry = true;
+
       try {
-        // Attempt to refresh token using the http-only refresh cookie
         await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/refresh-token`, 
-          {}, 
+          `${BASE_URL}/admin/refresh-token`,
+          {},
           { withCredentials: true }
         );
-        // Retry original request
+
         return api(originalRequest);
+
       } catch (refreshError) {
-        // If refresh fails, they must log in again
-        window.location.href = '/login'; 
+        window.location.href = "/";
         return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );

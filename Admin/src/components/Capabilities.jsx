@@ -44,14 +44,15 @@ const Capabilities = () => {
             />
 
             {/* Icon URL */}
-            <input
-              placeholder="SVG Icon URL (ImageKit)"
-              value={form.icon}
-              onChange={(e) =>
-                setForm({ ...form, icon: e.target.value })
-              }
-              className="p-3 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+           
+           
+
+            <textarea
+  placeholder="Paste SVG code here"
+  value={form.icon}
+  onChange={(e) => setForm({ ...form, icon: e.target.value })}
+   className="p-3 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+/>
 
           </div>
 
