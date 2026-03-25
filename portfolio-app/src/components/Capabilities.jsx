@@ -15,7 +15,7 @@ export default function Capabilities() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${backendUrl}/api/capability`);
-      console.log("DATA:", res.data.Capabilities);
+      // console.log("DATA:", res.data.Capabilities);
 
       setCapabilities(res.data.Capabilities); // 🔥 important
     } catch (error) {

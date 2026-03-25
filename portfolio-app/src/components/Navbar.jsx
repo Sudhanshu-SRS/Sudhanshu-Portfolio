@@ -1,18 +1,51 @@
 import { motion, useScroll } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { useEffect, useState } from 'react';
-
+import { Link, useLocation } from "react-router-dom";
 export default function Navbar() {
   const { scrollYProgress } = useScroll();
   const links = ['Services', 'Work', 'About', 'Experience', 'Testimonials', 'Contact'];
   const [mounted, setMounted] = useState(false);
 
+
+const location = useLocation();
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const handleLogoClick = (e) => {
+  if (location.pathname === "/") {
+    e.preventDefault(); // stop navigation
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+};
+
+
+const handleNavClick = (e, section) => {
+  if (location.pathname === "/") {
+    e.preventDefault();
+
+    const el = document.getElementById(section);
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }
+};
   const content = (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none" style={{ position: 'fixed' }}>
+    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"  style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    zIndex: 999999,
+    transform: "none" // 🔥 THIS IS KEY
+  }}>
       <motion.div 
         className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-emerald-500 to-sky-500 origin-left z-[100] shadow-[0_0_10px_rgba(129,140,248,0.8)] pointer-events-none"
         style={{ scaleX: scrollYProgress, position: 'fixed' }}
@@ -21,22 +54,40 @@ export default function Navbar() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="flex items-center justify-between px-6 py-6 md:px-12 mix-blend-difference pointer-events-auto w-full"
+        className="flex items-center justify-between px-6 py-6 md:px-12  pointer-events-auto w-full"
       >
-        <a href="#" className="font-bold text-xl tracking-tighter text-white uppercase">
-          Sudhanshu<span className="text-white/50">.</span>
-        </a>
-
+     <Link 
+  to="/" 
+  onClick={handleLogoClick}
+  className="font-bold text-xl tracking-tighter text-white uppercase"
+>
+  Sudhanshu<span className="text-white/50">.</span>
+</Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-          {links.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              {link}
-            </a>
-          ))}
+   {links.map((link) => {
+  const section = link.toLowerCase();
+
+  return location.pathname === "/" ? (
+    // ✅ Same page → smooth scroll
+    <a
+      key={link}
+      href={`#${section}`}
+      onClick={(e) => handleNavClick(e, section)}
+      className="hover:text-white transition-colors cursor-pointer"
+    >
+      {link}
+    </a>
+  ) : (
+    // ✅ Different page → go home with hash
+    <Link
+      key={link}
+      to={`/#${section}`}
+      className="hover:text-white transition-colors cursor-pointer"
+    >
+      {link}
+    </Link>
+  );
+})}
         </nav>
 
         <div className="flex items-center gap-2 md:gap-4 text-white/70">
@@ -60,5 +111,5 @@ export default function Navbar() {
   );
 
   if (!mounted) return null;
-  return createPortal(content, document.body);
+  return createPortal(content, document.getElementById("navbar-root"));
 }

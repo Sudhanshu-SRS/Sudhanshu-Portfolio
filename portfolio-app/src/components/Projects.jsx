@@ -37,7 +37,7 @@ export default function Projects() {
   const projectsdata = async () => {
    try {
      const data = await axios.get(`${backendUrl}/api/projects`);
-     console.log(data);
+    //  console.log(data);
     setProjects(data.data);
    } catch (error) {
     console.log(error);

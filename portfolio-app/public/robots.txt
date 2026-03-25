@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Allow important assets
+Allow: /assets/
+Allow: /images/
+
+# Block unnecessary files (optional but clean)
+Disallow: /node_modules/
+Disallow: /dist/
+
+# Sitemap location
+Sitemap: https://sudhanshu-sde.in/sitemap.xml

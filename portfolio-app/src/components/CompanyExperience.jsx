@@ -14,7 +14,7 @@ const Experience = () => {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${backendurl}/api/experience/`);
-      console.log(res.data);
+      // console.log(res.data);
       setExperiences(res.data);
     } catch (err) {
       console.error(err);

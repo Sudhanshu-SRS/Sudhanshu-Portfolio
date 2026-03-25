@@ -9,8 +9,18 @@ import CompanyExperience from "../components/CompanyExperience";
 import Testimonials from "../components/Testimonials";
 import CTASection from "../components/CTASection";
 import Footer from "../components/Footer";
-
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 function Home() {
+
+   const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const el = document.querySelector(location.hash);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [location]);
   return (
     <>
       <Navbar />
