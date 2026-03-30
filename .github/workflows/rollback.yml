@@ -1,0 +1,34 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Rollback via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 2222
+          script: |
+            set -e
+
+            echo "📂 Finding latest backup..."
+            LATEST_BACKUP=$(ls -dt /var/www/backups/* | head -1)
+
+            echo "♻️ Rolling back to $LATEST_BACKUP"
+
+            rm -rf /var/www/your-project/*
+            cp -r $LATEST_BACKUP/* /var/www/your-project/
+
+            cd /var/www/your-project/backend
+            pm2 reload PM2-Backend
+
+            systemctl reload nginx
+
+            echo "✅ Rollback Complete!"

@@ -1,0 +1,64 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy immediately
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 2222
+          timeout: 120s
+          command_timeout: 30m
+          script: |
+            set -e
+
+            cd /var/www/sudhanshu-portfolio
+
+            echo "📥 Pull latest code..."
+            git fetch origin
+            git reset --hard origin/main
+
+            # =========================
+            # 🎨 FRONTEND 1 (Portfolio)
+            # =========================
+            echo "🎨 Building Portfolio App..."
+            cd portfolio-app
+            rm -rf dist
+            npm install 
+            npm run build
+
+            # =========================
+            # 🛠 FRONTEND 2 (Admin)
+            # =========================
+            echo "🛠 Building Admin Panel..."
+            cd ../Admin
+            rm -rf dist
+            npm install 
+            npm run build
+
+            # =========================
+            # ⚙️ BACKEND
+            # =========================
+            echo "⚙️ Restarting Backend..."
+            cd ../backend
+            npm install
+            pm2 reload sudhanshu-portfolio-B 
+
+            # =========================
+            # 🌐 NGINX
+            # =========================
+            echo "🌐 Reloading Nginx..."
+            systemctl reload nginx
+
+            echo "✅ Deployment Complete!"
