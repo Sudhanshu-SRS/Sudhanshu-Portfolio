@@ -23,7 +23,7 @@ jobs:
           script: |
             set -e
 
-            cd /var/www/sudhanshu-portfolio
+            cd /var/www/Sudhanshu-portfolio
 
             echo "📥 Pull latest code..."
             git fetch origin
