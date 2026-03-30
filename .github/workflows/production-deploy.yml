@@ -53,7 +53,7 @@ jobs:
             echo "⚙️ Restarting Backend..."
             cd ../backend
             npm install
-            pm2 reload sudhanshu-portfolio-B 
+            pm2 reload sudhanshu-backend-P
 
             # =========================
             # 🌐 NGINX
