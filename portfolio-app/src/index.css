@@ -6,11 +6,13 @@
     "Inter", -apple-system, BlinkMacSystemFont, "San Francisco", sans-serif;
 }
 @layer base {
+  html, body {
+    overscroll-behavior: none;
+  }
   body {
     font-family: var(--font-sans);
     background-color: #121212;
     color: white;
-    overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

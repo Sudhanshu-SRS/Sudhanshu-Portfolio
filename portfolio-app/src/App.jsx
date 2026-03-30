@@ -2,7 +2,7 @@ import Home from "./pages/Home";
 
 function App() {
   return (
-    <main className="min-h-screen bg-[#121212] font-sans text-white selection:bg-indigo-500/30 relative">
+    <main className="min-h-screen bg-[#121212] font-sans text-white selection:bg-indigo-500/30 relative" style={{ overflowX: 'clip' }}>
 
       {/* Backgrounds stay here */}
       

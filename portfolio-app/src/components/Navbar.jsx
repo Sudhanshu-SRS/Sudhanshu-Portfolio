@@ -38,14 +38,14 @@ const handleNavClick = (e, section) => {
   }
 };
   const content = (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"  style={{
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    zIndex: 999999,
-    transform: "none" // 🔥 THIS IS KEY
-  }}>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 999999,
+      pointerEvents: 'none',
+    }}>
       <motion.div 
         className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-emerald-500 to-sky-500 origin-left z-[100] shadow-[0_0_10px_rgba(129,140,248,0.8)] pointer-events-none"
         style={{ scaleX: scrollYProgress, position: 'fixed' }}
