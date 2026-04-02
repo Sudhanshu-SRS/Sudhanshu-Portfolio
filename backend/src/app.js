@@ -16,6 +16,7 @@ const ClientRecomRoutes = require('./routes/clientRecom.routes');
 // Configure secure CORS
 // In production, process.env.FRONTEND_URL should be defined
 const allowedOrigins = [process.env.FRONTEND_URL,  "https://sudhanshu-sde.in",
+  "http://localhost:5174",
     "https://admin.sudhanshu-sde.in"].filter(Boolean);
 app.use(cors({ 
     origin: allowedOrigins, 

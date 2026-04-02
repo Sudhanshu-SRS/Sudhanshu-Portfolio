@@ -7,20 +7,21 @@ const SendEmail = require("../service/Nodemailer.js");
 const generateTokens = (res, userId, role) => {
   const accessToken = jwt.sign({ id: userId, role }, process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || 'fallback_secret', { expiresIn: '15m' });
   const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret', { expiresIn: '7d' });
+const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie('accessToken', accessToken, {
+res.cookie('accessToken', accessToken, {
   httpOnly: true,
-  secure: false, // keep false in dev
-  sameSite: 'lax', // 🔥 IMPORTANT
-  path: "/", // 🔥 IMPORTANT
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
   maxAge: 15 * 60 * 1000
 });
 
 res.cookie('refreshToken', refreshToken, {
   httpOnly: true,
-  secure: false,
-  sameSite: 'lax', // 🔥 IMPORTANT
-  path: "/", // 🔥 IMPORTANT
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
+  path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000
 });
 };
