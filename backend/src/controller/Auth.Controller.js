@@ -28,25 +28,37 @@ res.cookie('refreshToken', refreshToken, {
 
 const AdminLogin = async (req, res) => {
   try {
+    console.log("Login request:", req.body);
+
     const { email, password } = req.body;
+
     const admin = await AdminUser.findOne({ Email: email });
-    if (!admin) return res.status(404).json({ success: false, message: "No Admin With This Email" });
+    console.log("Admin found:", admin);
+
+    if (!admin) return res.status(404).json({ success: false });
 
     const PassMatch = await bcrypt.compare(password, admin.Password);
-    if (!PassMatch) return res.status(401).json({ success: false, message: "Password Is Incorrect" });
+    console.log("Password match:", PassMatch);
 
     const otp = OtpGennrator();
+    console.log("OTP generated:", otp);
+
     admin.Otp = otp;
     admin.OtpExpire = Date.now() + 5 * 60 * 1000;
+
     await admin.save();
-    
-    await SendEmail(email, otp);
-    res.json({ success: true, message: "Your Otp Has Been Sent Successfully" });
+    console.log("Saved OTP");
+
+    await SendEmail(email, otp); // suspect
+    console.log("Email sent");
+
+    res.json({ success: true });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    console.error("LOGIN ERROR:", error); // 🔥 IMPORTANT
+    res.status(500).json({ success: false, message: error.message });
   }
 };
-
 const VerifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
