@@ -4,8 +4,8 @@ const SendEmail=async(Email,Otp)=>{
     const Transporter=nodemailer.createTransport({
         service:'gmail',
         auth:{
-            user:process.env.Email_USER,
-            pass:process.env.Email_PASS
+            user:process.env.EMAIL_USER,
+            pass:process.env.EMAIL_PASS
         }
     })
 
